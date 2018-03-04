@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="bbtuner:jar">
+    <output-path>$PROJECT_DIR$/classes/artifacts/bbtuner_jar</output-path>
+    <root id="archive" name="bbtuner.jar">
+      <element id="module-output" name="bbtuner" />
+    </root>
+  </artifact>
+</component>
