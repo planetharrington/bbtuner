@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_bbtuner" default="compile.module.bbtuner">
+  <dirname property="module.bbtuner.basedir" file="${ant.file.module_bbtuner}"/>
+  
+  <property name="module.jdk.home.bbtuner" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.bbtuner" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.bbtuner" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.bbtuner" value="-encoding UTF-8 -source 1.8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="bbtuner.output.dir" value="${module.bbtuner.basedir}/bin"/>
+  <property name="bbtuner.testoutput.dir" value="${module.bbtuner.basedir}/bin"/>
+  
+  <path id="bbtuner.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="bbtuner.module.production.classpath">
+    <path refid="${module.jdk.classpath.bbtuner}"/>
+  </path>
+  
+  <path id="bbtuner.runtime.production.module.classpath">
+    <pathelement location="${bbtuner.output.dir}"/>
+  </path>
+  
+  <path id="bbtuner.module.classpath">
+    <pathelement location="${bbtuner.output.dir}"/>
+    <path refid="${module.jdk.classpath.bbtuner}"/>
+  </path>
+  
+  <path id="bbtuner.runtime.module.classpath">
+    <pathelement location="${bbtuner.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.bbtuner">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.bbtuner">
+    <patternset refid="excluded.from.module.bbtuner"/>
+  </patternset>
+  
+  <path id="bbtuner.module.sourcepath">
+    <dirset dir="${module.bbtuner.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.bbtuner" depends="compile.module.bbtuner.production,compile.module.bbtuner.tests" description="Compile module bbtuner"/>
+  
+  <target name="compile.module.bbtuner.production" depends="register.custom.compilers" description="Compile module bbtuner; production classes">
+    <mkdir dir="${bbtuner.output.dir}"/>
+    <javac2 destdir="${bbtuner.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.bbtuner}/javac">
+      <compilerarg line="${compiler.args.bbtuner}"/>
+      <bootclasspath refid="bbtuner.module.bootclasspath"/>
+      <classpath refid="bbtuner.module.production.classpath"/>
+      <src refid="bbtuner.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.bbtuner"/>
+    </javac2>
+    
+    <copy todir="${bbtuner.output.dir}">
+      <fileset dir="${module.bbtuner.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.bbtuner.tests" depends="register.custom.compilers,compile.module.bbtuner.production" description="compile module bbtuner; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.bbtuner" description="cleanup module">
+    <delete dir="${bbtuner.output.dir}"/>
+    <delete dir="${bbtuner.testoutput.dir}"/>
+  </target>
+</project>

@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!-- ====================================================================== 
+     Oct 1, 2004 3:09:05 PM                                                        
+
+     BBTuner
+     Musical Instrument Tuner
+                   
+     ====================================================================== -->
+<project name="BBTuner" default="jar">
+    <description>
+            Musical Instrument Tuner
+    </description>
+
+    <!-- ================================= 
+          target: compile
+         ================================= -->
+    <target name="compile" description="Compile the sources">
+        <mkdir dir="build" />
+        <javac srcdir="src"
+               destdir="build"
+
+               debug="on" />
+	<copy todir="build">
+	    <fileset dir="src">
+	      <exclude name="**/*.java"/>
+	      <exclude name="**/CVS"/>
+	      <exclude name="**/CVS/*"/>
+	    </fileset>
+	</copy>
+    </target>
+
+    <!-- ================================= 
+          target: clean
+         ================================= -->
+    <target name="clean">
+        <delete file="bbtuner.jar"/>
+	<delete dir="build"/>
+    </target>
+
+    <!-- ================================= 
+          target: jar
+         ================================= -->
+    <target name="jar" depends="compile">
+        <jar destfile="bbtuner.jar">
+            <fileset dir="build">
+                <include name="**/*.class" />
+                <include name="**/*.properties" />
+                <include name="**/*.jpg" />
+                <include name="**/*.ttf" />
+            </fileset>
+            <manifest>
+                <attribute name="Main-Class"
+                           value="com.shaunharrington.bbtuner.BBTuner" />
+            </manifest>
+        </jar>
+    </target>
+
+</project>
+
