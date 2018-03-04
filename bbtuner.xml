@@ -110,7 +110,84 @@
   
   <!-- Modules -->
   
-  <import file="${basedir}/module_bbtuner.xml"/>
+  
+  <!-- Module bbtuner -->
+  
+  <dirname property="module.bbtuner.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.bbtuner" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.bbtuner" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.bbtuner" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.bbtuner" value="-encoding UTF-8 -source 1.3 -target 1.8 ${compiler.args}"/>
+  
+  <property name="bbtuner.output.dir" value="${module.bbtuner.basedir}/bin"/>
+  <property name="bbtuner.testoutput.dir" value="${module.bbtuner.basedir}/bin"/>
+  
+  <path id="bbtuner.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="bbtuner.module.production.classpath">
+    <path refid="${module.jdk.classpath.bbtuner}"/>
+  </path>
+  
+  <path id="bbtuner.runtime.production.module.classpath">
+    <pathelement location="${bbtuner.output.dir}"/>
+  </path>
+  
+  <path id="bbtuner.module.classpath">
+    <pathelement location="${bbtuner.output.dir}"/>
+    <path refid="${module.jdk.classpath.bbtuner}"/>
+  </path>
+  
+  <path id="bbtuner.runtime.module.classpath">
+    <pathelement location="${bbtuner.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.bbtuner">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.bbtuner">
+    <patternset refid="excluded.from.module.bbtuner"/>
+  </patternset>
+  
+  <path id="bbtuner.module.sourcepath">
+    <dirset dir="${module.bbtuner.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.bbtuner" depends="compile.module.bbtuner.production,compile.module.bbtuner.tests" description="Compile module bbtuner"/>
+  
+  <target name="compile.module.bbtuner.production" depends="register.custom.compilers" description="Compile module bbtuner; production classes">
+    <mkdir dir="${bbtuner.output.dir}"/>
+    <javac2 destdir="${bbtuner.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.bbtuner}/javac">
+      <compilerarg line="${compiler.args.bbtuner}"/>
+      <bootclasspath refid="bbtuner.module.bootclasspath"/>
+      <classpath refid="bbtuner.module.production.classpath"/>
+      <src refid="bbtuner.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.bbtuner"/>
+    </javac2>
+    
+    <copy todir="${bbtuner.output.dir}">
+      <fileset dir="${module.bbtuner.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.bbtuner.tests" depends="register.custom.compilers,compile.module.bbtuner.production" description="compile module bbtuner; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.bbtuner" description="cleanup module">
+    <delete dir="${bbtuner.output.dir}"/>
+    <delete dir="${bbtuner.testoutput.dir}"/>
+  </target>
   
   <target name="init" description="Build initialization">
     <!-- Perform any build initialization in this target -->
@@ -120,5 +197,31 @@
   
   <target name="build.modules" depends="init, clean, compile.module.bbtuner" description="build all modules"/>
   
-  <target name="all" depends="build.modules" description="build all"/>
+  <target name="init.artifacts">
+    <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
+    <property name="artifact.output.bbtuner:jar" value="${basedir}/classes/artifacts/bbtuner_jar"/>
+    <mkdir dir="${artifacts.temp.dir}"/>
+    <property name="temp.jar.path.bbtuner.jar" value="${artifacts.temp.dir}/bbtuner.jar"/>
+  </target>
+  
+  <target name="artifact.bbtuner:jar" depends="init.artifacts, compile.module.bbtuner" description="Build &#39;bbtuner:jar&#39; artifact">
+    <property name="artifact.temp.output.bbtuner:jar" value="${artifacts.temp.dir}/bbtuner_jar"/>
+    <mkdir dir="${artifact.temp.output.bbtuner:jar}"/>
+    <jar destfile="${temp.jar.path.bbtuner.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset dir="${bbtuner.output.dir}"/>
+    </jar>
+    <copy file="${temp.jar.path.bbtuner.jar}" tofile="${artifact.temp.output.bbtuner:jar}/bbtuner.jar"/>
+  </target>
+  
+  <target name="build.all.artifacts" depends="artifact.bbtuner:jar" description="Build all artifacts">
+    <mkdir dir="${artifact.output.bbtuner:jar}"/>
+    <copy todir="${artifact.output.bbtuner:jar}">
+      <fileset dir="${artifact.temp.output.bbtuner:jar}"/>
+    </copy>
+    
+    <!-- Delete temporary files -->
+    <delete dir="${artifacts.temp.dir}"/>
+  </target>
+  
+  <target name="all" depends="build.modules, build.all.artifacts" description="build all"/>
 </project>
